@@ -12,7 +12,7 @@ def visualization_2D(lidar_df,spline_coords_list=None,color=None):
     plt.scatter(-lidar_df['x'], -lidar_df['y'], c=color, s=1)
     if spline_coords_list is not None:
         for i, (xs, ys, zs) in enumerate(spline_coords_list):
-            plt.plot(xs, ys, c='red', lw=2)
+            plt.plot(-xs, -ys, c='red', lw=2)
     plt.grid()
     plt.xlabel('x, m', fontsize=26)
     plt.ylabel('y, m', fontsize=26)
