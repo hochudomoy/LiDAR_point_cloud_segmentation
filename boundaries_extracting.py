@@ -87,7 +87,8 @@ def extract_curb(ground_points, height_threshold=[0.05, 0.3], slope_threshold=0.
             x_sorted = x_in[sort_idx]
             y_sorted = y_in[sort_idx]
             z_sorted = z_in[sort_idx]
-            tck, _ = splprep([x_sorted, y_sorted,z_sorted], s=1)
+            try: tck, _ = splprep([x_sorted, y_sorted, z_sorted], s=1)
+            except: continue
             u = np.linspace(0, 1, 200)
             xs, ys, zs = splev(u, tck)
 
