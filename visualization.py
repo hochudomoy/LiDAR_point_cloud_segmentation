@@ -77,7 +77,7 @@ def visualization_3D(xyz, labels=None, curb_lines=None, markings=None):
     fig.show()
 
 
-def gif_2D(sequence_lidar_df, sequence_preds, sequence_curb_lines=None, markings=None, ):
+def gif_2D(sequence_lidar_df, sequence_preds, sequence_curb_lines=None, markings=None):
     frames = []
     for i, (lidar_df, pred) in enumerate(zip(sequence_lidar_df, sequence_preds)):
         color = np.where(pred == 1, 'green', 'red')

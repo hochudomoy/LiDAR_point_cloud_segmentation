@@ -20,12 +20,12 @@ def load_model(type):
 
     if (type=='ground'):
         model.load_state_dict(torch.load(
-        "C:\\Users\\User\\LiDAR_point_cloud_segmentation\\SegFormer\\SegFormer_ground.pth",
+        "C:\\Users\\User\\LiDAR_point_cloud_segmentation_\\SegFormer\\SegFormer_ground.pth",
         map_location='cpu'
     ))
     else:
         model.load_state_dict(torch.load(
-        "C:\\Users\\User\\LiDAR_point_cloud_segmentation\\SegFormer\\SegFormer_road.pth",
+        "C:\\Users\\User\\LiDAR_point_cloud_segmentation_\\SegFormer\\SegFormer_road.pth",
         map_location='cpu'
     ))
     model.eval()

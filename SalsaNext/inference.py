@@ -9,7 +9,7 @@ def load_model():
     model.model.module.logits = nn.Conv2d(32, 2, kernel_size=1)
 
     model.load_state_dict(torch.load(
-        "C:\\Users\\User\\LiDAR_point_cloud_segmentation\\SalsaNext\\salsanext_ground.pth",
+        "C:\\Users\\User\\LiDAR_point_cloud_segmentation_\\SalsaNext\\salsanext_ground.pth",
         map_location='cpu'
     ))
 

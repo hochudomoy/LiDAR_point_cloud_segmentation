@@ -11,7 +11,7 @@ from velodyne_utils import read_velodyne_bin, read_label_file
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class KITTI_LiDAR(Dataset):
-    def __init__(self, sequences=['01', '02', '03'], data_root='C:\\Users\\User\\LiDAR_point_cloud_segmentation',
+    def __init__(self, sequences=['01', '02', '03'], data_root='C:\\Users\\User\\LiDAR_point_cloud_segmentation_',
                  target_size=(16, 512)):
         self.files = []
         self.ground_classes = [40, 44, 48, 49]

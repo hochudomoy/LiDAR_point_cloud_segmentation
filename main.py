@@ -23,8 +23,8 @@ gif_curbs=[]
 gif_markings=[]
 max_gif_frames=int(args.gif_frames)
 
-if args.ground_segmentation=='SalsaNext': model = SalsaNext.inference.load_model()
-if args.ground_segmentation=='SegFormer': model = SegFormer.inference.load_model('ground')
+if args.ground_segmentation=='SalsaNext': model_salsa = SalsaNext.inference.load_model()
+if args.ground_segmentation=='SegFormer' or 'combined': model= SegFormer.inference.load_model('ground')
 if args.boundaries_segmentation=='extract_border': boundaries_model = SegFormer.inference.load_model('road')
 
 folder=args.input_folder
@@ -45,12 +45,12 @@ for i in files:
         final_pred = ground_filtering.iterative_ground_filtering(lidar_df)
         ground_points = lidar_df[final_pred]
     elif args.ground_segmentation=='SalsaNext':
-        final_pred,prob = SalsaNext.inference.SalsaNext(lidar_df,model)
-        ground_points = lidar_df[final_pred]
+        final_pred,prob = SalsaNext.inference.SalsaNext(lidar_df,model_salsa)
+        ground_points = lidar_df[final_pred==1]
     elif args.ground_segmentation=='SegFormer':
         final_pred,prob = SegFormer.inference.SegFormer(lidar_df, model)
-        ground_points = lidar_df[final_pred]
-    elif args.ground_segmentation=='"Neighbours_grid_filter"':
+        ground_points = lidar_df[final_pred==1]
+    elif args.ground_segmentation=='Neighbours_grid_filter':
         final_pred = ground_filtering.ground_neighbours_grid_filter(lidar_df)
         ground_points = lidar_df[final_pred]
     else:
@@ -64,15 +64,19 @@ for i in files:
         curb_lines = extract_border(ground_points)
     elif args.boundaries_segmentation=='extract_curb':
         curb_points, curb_lines = extract_curb(ground_points)
+    else: curb_lines=None
     if args.markings_segmentation=='true':
         t = otsu_threshold(ground_points['intensity'])
         candidate_markings = ground_points[ground_points['intensity'] >= t * 2]
         markings = markings_search(candidate_markings, Nl=6, Np=10)
+    else:candidate_markings=None
     if len(gif_lidar) < max_gif_frames:
         gif_lidar.append(lidar_df)
         gif_preds.append(final_pred)
         if args.boundaries_segmentation != 'false': gif_curbs.append(curb_lines)
+        else: gif_curbs=None
         if args.markings_segmentation != 'false': gif_markings.append(candidate_markings)
+        else:gif_markings=None
     else: break
 if args.type_of_vizualization == '2D_gif': gif_2D(gif_lidar,gif_preds,gif_curbs,gif_markings)
 if args.type_of_vizualization =='3D_gif':gif_3D(gif_lidar,gif_preds,gif_curbs,gif_markings)

@@ -115,12 +115,20 @@ def split_by_distance(points, max_dist=2.0):
     return lines
 def extract_border(road_points):
     '''1) С помощью SegFormer сегментируем дорогу
+       2) Фильтруем по высоте
        2) Затем в плоскости XY с помощью метода главных компонент находим ось дороги и нормаль к ней
        3) Центрируем точки и переводим в новую систему координат(s - сдвиг вдоль дороги, t - отклонение от центра дороги)
        4) Вдоль оси s разделяем дорогу на сечения, в каждом сечении находим минимальную и максимальную точку отклонения от центра, соответсвенно кандидаты на левую и правую границы)
        5) Переводим точки обратно в систему координат XY
-       6) Разделяем точки на линии, по расстоянию между точками'''
+       6) Разделяем точки на линии, по расстоянию между точками, сглаживаем линии с помощью B-сплайна'''
     road_points = road_points.to_numpy()
+
+    z = road_points[:, 2]
+    z_med = np.median(z)
+    z_std = np.std(z)
+    z_mask = np.abs(z - z_med) < z_std
+    road_points = road_points[z_mask]
+
     pca = PCA(n_components=2)
     pca.fit(road_points[:, :2])
 
@@ -146,11 +154,14 @@ def extract_border(road_points):
 
         t_slice = t[idx]
 
-        left_idx = idx[np.argmin(t_slice)]
-        right_idx = idx[np.argmax(t_slice)]
+        left_val = np.percentile(t_slice, 5)
+        right_val = np.percentile(t_slice, 95)
 
-        left_boundary.append((road_points[left_idx][0], road_points[left_idx][1], road_points[left_idx][2]))
-        right_boundary.append((road_points[right_idx][0], road_points[right_idx][1], road_points[right_idx][2]))
+        left_idx = idx[np.argmin(np.abs(t_slice - left_val))]
+        right_idx = idx[np.argmin(np.abs(t_slice - right_val))]
+
+        left_boundary.append(road_points[left_idx])
+        right_boundary.append(road_points[right_idx])
 
     left_boundary = np.array(left_boundary)
     right_boundary = np.array(right_boundary)
@@ -160,11 +171,20 @@ def extract_border(road_points):
     left_lines = split_by_distance(left_xy, max_dist=2.0)
     right_lines = split_by_distance(right_xy, max_dist=2.0)
     lines = left_lines + right_lines
-    coords_list=[]
+    coords_list = []
     for line in lines:
-        xs = line[:, 0]
-        ys = line[:, 1]
-        zs = line[:, 2]
-        coords_list.append((xs, ys, zs))
+        if len(line) >= 5:
+            x = line[:, 0]
+            y = line[:, 1]
+            z = line[:, 2]
+
+            try:
+                tck, _ = splprep([x, y, z], s=2.0)
+                u_new = np.linspace(0, 1, len(line))
+                x, y, z = splev(u_new, tck)
+            except:
+                pass
+
+            coords_list.append((x, y, z))
     return coords_list
 
